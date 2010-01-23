@@ -4,6 +4,11 @@ import Control.DeepSeq
 import Control.Monad
 import Foreign
 
+data (:<) a b
+class STLikeImpl m =>RegionMonad m s reg
+instance STLikeImpl m => RegionMonad m s s
+instance (STLikeImpl m, RegionMonad m reg s) => RegionMonad m (any :< reg) s
+
 -- | Regioned variables.
 -- A regioned variable is /safe/ i.e. no references to
 -- it may escape the current IOS.
@@ -18,12 +23,12 @@ instance Functor (Regioned s) where
 
 -- | Run a computation on regioned data
 -- and return the result in a strict fashion.
-runRegion :: (NotShared ty, STLikeImpl m) => Regioned s ty -> STLike m s ty
+runRegion :: (NotShared ty, RegionMonad m region s) => Regioned s ty -> STLike m region ty
 runRegion = runRegionImpl
 
 
 class NFData ty => NotShared ty where
-    runRegionImpl :: STLikeImpl m => Regioned s ty -> STLike m s ty
+    runRegionImpl :: RegionMonad m region s => Regioned s ty -> STLike m region ty
     runRegionImpl (R v) = v `deepseq` return v
 
 instance NotShared Bool
@@ -61,7 +66,7 @@ instance (NotShared a1, NotShared a2, NotShared a3, NotShared a4, NotShared a5) 
 --    runRegion (R bs) = return $! B.copy bs
 
 
-unsafeRemoveRegion :: STLikeImpl m => Regioned s r -> STLike m s r
+unsafeRemoveRegion :: RegionMonad m region s => Regioned s r -> STLike m region r
 unsafeRemoveRegion (R x) = return x
 
 newtype STLike m s t = STLike (m t)

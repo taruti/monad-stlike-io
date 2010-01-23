@@ -4,9 +4,10 @@ module Control.Monad.STLike.IO
      -- * Regioned monad
     ,Regioned, runRegion, region
      -- * Utilities
-    ,rbsFromPtr,rbsToBS,withRbsPtr,rbsMapLookup
+    ,(:<), withRIOS, withRIOR, rbsFromPtr,rbsToBS,withRbsPtr,rbsMapLookup
     ) where
 
+import qualified Control.Exception as E
 import Control.Monad.STLike.Internal
 import Control.Monad.Trans
 import qualified Data.ByteString as B
@@ -31,6 +32,23 @@ io x = STLike x
 runIOS :: (forall s. IOS s t) -> IO t
 runIOS x = let STLike v = x in v
 
+-- | Use a resource with IOS. Like /bracket/.
+withRIOS :: IOS (s :< o) (resource s)           -- ^ Open the resource
+         -> (resource s -> IOS (s :< o) ())     -- ^ Close it.
+         -> (resource s -> IOS (s :< o) result) -- ^ Compute with it.
+         -> IOS o result
+withRIOS (STLike open) close work = STLike (E.bracket open ioclose iowork)
+    where iowork  x = let STLike w = work  x in w
+          ioclose x = let STLike w = close x in w
+
+-- | Use a resource with IOS. Like /bracket/.
+withRIOR :: IOS (s :< o) resource           -- ^ Open the resource
+         -> (resource -> IOS (s :< o) ())   -- ^ Close it.
+         -> (Regioned s resource -> IOS (s :< o) result) -- ^ Compute with it.
+         -> IOS o result
+withRIOR (STLike open) close work = STLike (E.bracket open ioclose iowork)
+    where iowork  x = let STLike w = work  (R x) in w
+          ioclose x = let STLike w = close x in w
 
 -- | Create a ByteString representing the pointer and length. 
 --   No copying done, O(1).

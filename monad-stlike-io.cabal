@@ -1,5 +1,5 @@
 Name:                monad-stlike-io
-Version:             0.1
+Version:             0.2
 Synopsis:            ST-like monad capturing variables to regions and supporting IO.
 Description:         ST-like monad capturing variables to regions and supporting IO.
 License:             BSD3
@@ -12,6 +12,6 @@ Build-Depends:       base >= 4 && < 5, bytestring, containers, deepseq, transfor
 Exposed-modules:     Control.Monad.STLike.IO,
 		     Control.Monad.STLike.Unsafe
 Other-modules:       Control.Monad.STLike.Internal
-Extensions:          RankNTypes, FlexibleInstances
+Extensions:          RankNTypes, FlexibleInstances, TypeOperators, EmptyDataDecls, MultiParamTypeClasses
 GHC-Options:         -Wall
 Build-Type:	     Simple
