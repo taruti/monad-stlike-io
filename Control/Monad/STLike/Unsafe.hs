@@ -1,5 +1,5 @@
 {-# OPTIONS_HADDOCK prune #-}
--- | Unsafe intersafe for implementators.
+-- | Unsafe interface for implementators.
 --   Purposefully not documented.
 module Control.Monad.STLike.Unsafe
     (STLike(..), STLikeImpl, NotShared(..), unsafeRemoveRegion
