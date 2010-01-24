@@ -4,7 +4,7 @@ module Control.Monad.STLike.IO
      -- * Regioned monad
     ,Regioned, runRegion, region
      -- * Utilities
-    ,(:<), withRIOS, withRIOR, rbsFromPtr,rbsToBS,withRbsPtr,rbsMapLookup
+    ,(:<), withRIOR, rbsFromPtr,rbsToBS,withRbsPtr,rbsMapLookup
     ) where
 
 import qualified Control.Exception as E
@@ -32,19 +32,20 @@ io x = STLike x
 runIOS :: (forall s. IOS s t) -> IO t
 runIOS x = let STLike v = x in v
 
+{-
 -- | Use a resource with IOS. Like /bracket/.
-withRIOS :: IOS (s :< o) (resource s)           -- ^ Open the resource
-         -> (resource s -> IOS (s :< o) ())     -- ^ Close it.
-         -> (resource s -> IOS (s :< o) result) -- ^ Compute with it.
+withRIOS :: (forall s. IOS (s :< o) (resource s))            -- ^ Open the resource
+            (forall s. (resource s -> IOS (s :< o) ()))      -- ^ Close it.
+            (forall s. (resource s -> IOS (s :< o) result))  -- ^ Compute with it.
          -> IOS o result
-withRIOS (STLike open) close work = STLike (E.bracket open ioclose iowork)
+withRIOS (STLike open, close, work) = STLike (E.bracket open ioclose iowork)
     where iowork  x = let STLike w = work  x in w
           ioclose x = let STLike w = close x in w
-
+-}
 -- | Use a resource with IOS. Like /bracket/.
-withRIOR :: IOS (s :< o) resource           -- ^ Open the resource
-         -> (resource -> IOS (s :< o) ())   -- ^ Close it.
-         -> (Regioned s resource -> IOS (s :< o) result) -- ^ Compute with it.
+withRIOR :: IOS o resource           -- ^ Open the resource
+         -> (resource -> IOS o ())   -- ^ Close it.
+         -> (forall s. Regioned s resource -> IOS (s :< o) result) -- ^ Compute with it.
          -> IOS o result
 withRIOR (STLike open) close work = STLike (E.bracket open ioclose iowork)
     where iowork  x = let STLike w = work  (R x) in w
@@ -56,7 +57,7 @@ rbsFromPtr :: Ptr a -> Int -> IOS s (Regioned s B.ByteString)
 rbsFromPtr ptr len = io $ fmap R $ B.unsafePackCStringLen (castPtr ptr,len)
 
 -- | Create a copy of a regioned ByteString as a normal ByteString. O(n).
-rbsToBS :: STLikeImpl m => Regioned s B.ByteString -> STLike m s B.ByteString
+rbsToBS :: RegionMonad m s reg => Regioned s B.ByteString -> STLike m reg B.ByteString
 rbsToBS (R b) = return $! B.copy b
 
 -- | Use a regioned ByteString as a pointer. O(1). 
@@ -67,7 +68,7 @@ withRbsPtr :: Regioned s B.ByteString -> (Ptr any -> Int -> IOS s t) -> IOS s t
 withRbsPtr (R b) act = io $ B.unsafeUseAsCStringLen b (\(p,l) -> let STLike v = (act (castPtr p) l) in v)
 
 -- | Lookup inside a Map with a regioned ByteString.
-rbsMapLookup :: (STLikeImpl m, Ord key) => Regioned s key -> M.Map key value -> STLike m s (Maybe value)
+rbsMapLookup :: (RegionMonad m s reg, Ord key) => Regioned s key -> M.Map key value -> STLike m reg (Maybe value)
 rbsMapLookup (R k) m = case M.lookup k m of
                       Just x  -> return (Just x)
                       Nothing -> return Nothing
