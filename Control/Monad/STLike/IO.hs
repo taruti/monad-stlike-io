@@ -4,7 +4,7 @@ module Control.Monad.STLike.IO
      -- * Regioned monad
     ,Regioned, runRegion, region
      -- * Utilities
-    ,(:<), withRIOR, rbsFromPtr,rbsToBS,withRbsPtr,rbsMapLookup
+    ,RegionMonad, (:<), withRIOR, rbsFromPtr,rbsToBS,withRbsPtr,rbsMapLookup
     ) where
 
 import qualified Control.Exception as E

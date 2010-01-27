@@ -4,10 +4,6 @@ import Control.DeepSeq
 import Control.Monad
 import Foreign
 
-data (:<) a b
-class STLikeImpl m =>RegionMonad m s reg
-instance STLikeImpl m => RegionMonad m s s
-instance (STLikeImpl m, RegionMonad m reg s) => RegionMonad m (any :< reg) s
 
 -- | Regioned variables.
 -- A regioned variable is /safe/ i.e. no references to
@@ -71,7 +67,7 @@ unsafeRemoveRegion (R x) = return x
 
 newtype STLike m s t = STLike (m t)
 
-class Monad m => STLikeImpl m
+class Monad m => STLikeImpl (m :: * -> *)
 
 instance STLikeImpl m => Monad (STLike m s) where
     (STLike a) >> (STLike b)   = STLike (a >> b)
@@ -82,4 +78,23 @@ instance STLikeImpl m => Monad (STLike m s) where
 
 instance (STLikeImpl m) => Functor (STLike m s) where
     fmap f (STLike m) = STLike (liftM f m)
+
+
+
+data (:<) a b
+class STLikeImpl m => RegionMonad (m :: * -> *) region s
+instance STLikeImpl m => RegionMonad m s s
+instance (STLikeImpl m,
+          reg `TypeCast` (any :< rest),
+          RegionMonad m rest s)
+    => RegionMonad m reg s
+
+
+-- see http://okmij.org/ftp/Haskell/typecast.html
+class TypeCast   a b   | a -> b, b->a   where typeCast   :: a -> b
+class TypeCast'  t a b | t a -> b, t b -> a where typeCast'  :: t->a->b
+class TypeCast'' t a b | t a -> b, t b -> a where typeCast'' :: t->a->b
+instance TypeCast'  () a b => TypeCast a b where typeCast x = typeCast' () x
+instance TypeCast'' t a b => TypeCast' t a b where typeCast' = typeCast''
+instance TypeCast'' () a a where typeCast'' _ x  = x
 

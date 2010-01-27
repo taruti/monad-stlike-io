@@ -20,5 +20,7 @@ Library
   Exposed-modules:     Control.Monad.STLike.IO,
                        Control.Monad.STLike.Unsafe
   Other-modules:       Control.Monad.STLike.Internal
-  Extensions:          RankNTypes, FlexibleInstances, TypeOperators, EmptyDataDecls, MultiParamTypeClasses
+  Extensions:          RankNTypes, FlexibleInstances, TypeOperators, EmptyDataDecls, MultiParamTypeClasses,
+                       FunctionalDependencies, FlexibleContexts, UndecidableInstances, OverlappingInstances,
+                       KindSignatures
   GHC-Options:         -Wall
