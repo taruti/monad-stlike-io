@@ -8,7 +8,7 @@ License:             BSD3
 License-file:        COPYING
 Copyright:           Taru Karttunen <taruti@taruti.net>
 Author:              Taru Karttunen
-Category:            Regions, Monads
+Category:            Monadic Regions, Monads
 Maintainer:          taruti@taruti.net
 Homepage:	     http://github.com/taruti/monad-stlike-io
 Source-repository head
