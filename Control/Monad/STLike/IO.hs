@@ -2,9 +2,9 @@ module Control.Monad.STLike.IO
     (-- * IOS monad
      IOS, io, runIOS
      -- * Regioned monad
-    ,Regioned, runRegion, region
+    ,Regioned, runRegion, region, unfoldRegion
      -- * Utilities
-    ,RegionMonad, (:<), withRIOR, rbsFromPtr,rbsToBS,withRbsPtr,rbsMapLookup
+    ,RegionMonad, (:<), withRIOR, try, rbsFromPtr,rbsToBS,withRbsPtr,rbsMapLookup
     ) where
 
 import qualified Control.Exception as E
@@ -28,6 +28,9 @@ instance MonadIO (STLike IO s) where
 io :: IO t -> IOS s t
 io x = STLike x
 
+try :: IOS s t -> IOS s (Either E.SomeException t)
+try (STLike x) = STLike (E.try x)
+
 -- | Run an IOS computation in the IO monad.
 runIOS :: (forall s. IOS s t) -> IO t
 runIOS x = let STLike v = x in v
@@ -45,7 +48,7 @@ withRIOS (STLike open, close, work) = STLike (E.bracket open ioclose iowork)
 -- | Use a resource with IOS. Like /bracket/.
 withRIOR :: IOS o resource           -- ^ Open the resource
          -> (resource -> IOS o ())   -- ^ Close it.
-         -> (forall s. Regioned s resource -> IOS (s :< o) result) -- ^ Compute with it.
+         -> (forall s. Regioned (s:<o) resource -> IOS (s:<o) result) -- ^ Compute with it.
          -> IOS o result
 withRIOR (STLike open) close work = STLike (E.bracket open ioclose iowork)
     where iowork  x = let STLike w = work  (R x) in w

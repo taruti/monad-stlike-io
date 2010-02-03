@@ -2,6 +2,7 @@ module Control.Monad.STLike.Internal where
 
 import Control.DeepSeq
 import Control.Monad
+import Data.Foldable(Foldable, toList)
 import Foreign
 
 
@@ -64,6 +65,9 @@ instance (NotShared a1, NotShared a2, NotShared a3, NotShared a4, NotShared a5) 
 
 unsafeRemoveRegion :: RegionMonad m region s => Regioned s r -> STLike m region r
 unsafeRemoveRegion (R x) = return x
+
+unfoldRegion :: Foldable t => Regioned s (t a) -> [Regioned s a]
+unfoldRegion (R t) = map R (toList t)
 
 newtype STLike m s t = STLike (m t)
 

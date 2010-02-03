@@ -1,5 +1,5 @@
 Name:                monad-stlike-io
-Version:             0.2
+Version:             0.2.1
 Cabal-Version:       >= 1.2
 Build-Type:          Simple
 Synopsis:            ST-like monad capturing variables to regions and supporting IO.
