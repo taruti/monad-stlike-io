@@ -1,6 +1,6 @@
 Name:                monad-stlike-io
 Version:             0.2.1
-Cabal-Version:       >= 1.2
+Cabal-Version:       >= 1.6
 Build-Type:          Simple
 Synopsis:            ST-like monad capturing variables to regions and supporting IO.
 Description:         ST-like monad capturing variables to regions and supporting IO.
