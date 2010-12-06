@@ -1,5 +1,5 @@
 Name:                monad-stlike-io
-Version:             0.2.1
+Version:             0.2.2
 Cabal-Version:       >= 1.6
 Build-Type:          Simple
 Synopsis:            ST-like monad capturing variables to regions and supporting IO.
@@ -16,7 +16,7 @@ Source-repository head
   location: http://github.com/taruti/monad-stlike-io.git
 
 Library
-  Build-Depends:       base >= 4 && < 5, bytestring, containers, deepseq, transformers
+  Build-Depends:       base >= 4 && < 5, bytestring, containers, deepseq, monads-tf
   Exposed-modules:     Control.Monad.STLike.IO,
                        Control.Monad.STLike.Unsafe
   Other-modules:       Control.Monad.STLike.Internal
